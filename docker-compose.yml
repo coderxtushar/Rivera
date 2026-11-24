@@ -1,0 +1,27 @@
+# Local stack: `docker compose up` → API on :4000, MongoDB on :27017.
+# Or run only the database and use `npm run dev`: `docker compose up mongo`.
+services:
+  mongo:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  api:
+    build: .
+    depends_on:
+      - mongo
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongo:27017/rivera
+      CLIENT_URL: http://localhost:5173
+      COOKIE_SECURE: "false"
+    env_file:
+      - path: .env
+        required: false
+
+volumes:
+  mongo-data:
