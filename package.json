@@ -1,19 +1,45 @@
 {
-  "name": "course",
+  "name": "rivera-api",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+  "description": "Rivera — course marketplace SaaS backend (Express + MongoDB)",
+  "main": "src/server.js",
+  "private": true,
+  "engines": {
+    "node": ">=22"
   },
-  "keywords": [],
-  "author": "",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "seed": "node --env-file-if-exists=.env scripts/seed.js",
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "smoke": "node --env-file-if-exists=.env scripts/smoke.js"
+  },
+  "keywords": [
+    "lms",
+    "courses",
+    "saas",
+    "express",
+    "mongodb"
+  ],
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "express": "^4.21.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.3"
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.13.0",
+    "nodemailer": "^10.6.1",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.4.0",
+    "pino-pretty": "^13.2.0",
+    "supertest": "^7.3.2"
   }
 }
