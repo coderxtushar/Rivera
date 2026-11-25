@@ -148,7 +148,7 @@ async function seedDemo(categories) {
         title,
         order,
         type: 'video',
-        videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
         durationSec: 300 + order * 120,
         isPreview: si === 0 && order === 0,
         content: `Notes for **${title}**.`,
