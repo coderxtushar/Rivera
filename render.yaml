@@ -46,15 +46,16 @@ services:
       - key: PLATFORM_FEE_PERCENT
         value: "20"
 
-      # Payments: test mode. Checkout shows a one-click test payment; no money moves,
-      # so anyone can get paid courses free. Fine for a demo, not for real sales.
+      # Payments: Razorpay. Use rzp_test_ keys now; swap in rzp_live_ keys after
+      # KYC activation. Key values are entered in the Render dashboard only.
       - key: PAYMENT_PROVIDER
-        value: mock
-      - key: ALLOW_MOCK_PAYMENTS
-        value: "true"
-      # To take real payments later, change PAYMENT_PROVIDER to razorpay, delete
-      # ALLOW_MOCK_PAYMENTS, and add RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and
-      # RAZORPAY_WEBHOOK_SECRET in the Render dashboard (Environment tab).
+        value: razorpay
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
 
       # Optional: transactional email (e.g. Brevo free SMTP). Without it, links are logged.
       - key: SMTP_HOST
