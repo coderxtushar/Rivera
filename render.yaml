@@ -1,10 +1,12 @@
-# Render Blueprint — free web service. In the Render dashboard: New → Blueprint → pick this repo.
-# Secrets marked `sync: false` are entered in the dashboard, never committed.
+# Render Blueprint for the Rivera API (free web service).
+# Dashboard → New → Blueprint → pick this repo. Values marked `sync: false`
+# are secrets/URLs you type into the dashboard; they are never committed.
 services:
   - type: web
     name: rivera-api
     runtime: node
     plan: free
+    region: singapore # closest free region to India
     buildCommand: npm ci --omit=dev --ignore-scripts
     startCommand: node src/server.js
     healthCheckPath: /health
@@ -13,26 +15,53 @@ services:
         value: production
       - key: NODE_VERSION
         value: "24"
+
+      # Database: MongoDB Atlas connection string (Network Access must allow 0.0.0.0/0)
       - key: MONGODB_URI
         sync: false
+
+      # Auth secrets: Render generates strong random values
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
+
+      # The Vercel site, e.g. https://rivera.vercel.app (no trailing slash)
       - key: CLIENT_URL
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      # Frontend and API on different domains → cross-site cookies.
+
+      # The site proxies /api/v1 to this service, so cookies are first-party.
       - key: COOKIE_SAMESITE
-        value: none
+        value: lax
       - key: COOKIE_SECURE
         value: "true"
+      # Requests arrive via Vercel's proxy and Render's load balancer.
+      - key: TRUST_PROXY
+        value: "2"
+
+      - key: DEFAULT_CURRENCY
+        value: INR
+      - key: PLATFORM_FEE_PERCENT
+        value: "20"
+
+      # Payments: test mode. Checkout shows a one-click test payment; no money moves,
+      # so anyone can get paid courses free. Fine for a demo, not for real sales.
       - key: PAYMENT_PROVIDER
-        value: razorpay
-      - key: RAZORPAY_KEY_ID
+        value: mock
+      - key: ALLOW_MOCK_PAYMENTS
+        value: "true"
+      # To take real payments later, change PAYMENT_PROVIDER to razorpay, delete
+      # ALLOW_MOCK_PAYMENTS, and add RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and
+      # RAZORPAY_WEBHOOK_SECRET in the Render dashboard (Environment tab).
+
+      # Optional: transactional email (e.g. Brevo free SMTP). Without it, links are logged.
+      - key: SMTP_HOST
         sync: false
-      - key: RAZORPAY_KEY_SECRET
+      - key: SMTP_USER
         sync: false
-      - key: RAZORPAY_WEBHOOK_SECRET
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
         sync: false
