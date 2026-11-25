@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "./api";
 import type { Role, User } from "./types";
@@ -82,8 +82,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+const noopSubscribe = () => () => {};
+
+/** False on the server and while hydrating; true once the client has taken over. */
+function useHydrated() {
+  return useSyncExternalStore(noopSubscribe, () => true, () => false);
+}
+
+export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
+  const hydrated = useHydrated();
+  // The server never knows who is signed in, so it renders the loading state.
+  // Parts of the page that hydrate late (inside Suspense) may find /auth/me
+  // already answered; they must still match the server HTML on first render.
+  if (!hydrated) return { ...ctx, user: null, loading: true, hasRole: () => false };
   return ctx;
 }

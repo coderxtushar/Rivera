@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${anybody.variable} ${hanken.variable} antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${anybody.variable} ${hanken.variable} antialiased`}>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
       </body>
