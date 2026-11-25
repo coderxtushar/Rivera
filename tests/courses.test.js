@@ -171,6 +171,18 @@ describe('courses & curriculum', () => {
     assert.equal((await api().get('/api/v1/instructor/courses').set(student.auth)).status, 403);
   });
 
+  it('accepts site-relative cover images but rejects other schemes', async () => {
+    const { body } = await api().post('/api/v1/courses').set(instructor.auth).send({ title: 'Cover path course' });
+    const id = body.data.course._id;
+    const ok = await api().patch(`/api/v1/courses/${id}`).set(instructor.auth).send({ thumbnailUrl: '/covers/cover-path-course.jpg' });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.body.data.course.thumbnailUrl, '/covers/cover-path-course.jpg');
+    for (const bad of ['//evil.example/x.jpg', 'javascript:alert(1)', 'ftp://x/y.jpg']) {
+      // eslint-disable-next-line no-await-in-loop
+      assert.equal((await api().patch(`/api/v1/courses/${id}`).set(instructor.auth).send({ thumbnailUrl: bad })).status, 400, bad);
+    }
+  });
+
   it('returns consistent errors for bad ids and unknown routes', async () => {
     const notFound = await api().get('/api/v1/does-not-exist');
     assert.equal(notFound.status, 404);

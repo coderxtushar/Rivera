@@ -95,7 +95,7 @@ export function MediaInput({
       <Field label={label} hint={hint ?? (canUpload ? "Paste a link, or upload a file and the link fills in." : undefined)} error={error}>
         {(p) => (
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Input {...p} type="url" inputMode="url" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ?? "https://"} className="min-w-0 flex-1" />
+            <Input {...p} type="text" inputMode="url" autoComplete="off" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ?? "https://"} className="min-w-0 flex-1" />
             {canUpload && (
               <>
                 <input ref={fileRef} type="file" accept={ACCEPT[kind]} className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => pick(e.target.files?.[0])} />

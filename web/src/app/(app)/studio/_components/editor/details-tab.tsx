@@ -77,7 +77,9 @@ export function detailsChanges(draft: DetailsDraft, course: Course) {
   return out;
 }
 
+/** Previewable image: an https:// link or a file served by this site ("/covers/…"). */
 const isHttps = (v: string) => {
+  if (/^\/(?!\/)/.test(v)) return true;
   try {
     return new URL(v).protocol === "https:";
   } catch {

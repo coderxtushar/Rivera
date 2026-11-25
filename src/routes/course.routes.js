@@ -7,7 +7,7 @@ const ApiError = require('../lib/ApiError');
 const { paginate, uniqueSlug, isObjectId, sameId, escapeRegex } = require('../lib/util');
 const { Course, Lesson, Category, Enrollment, Review, User, Coupon } = require('../models');
 const { authenticate, optionalAuth, requireRole, requireVerifiedEmail } = require('../middleware/auth');
-const { validate, z, objectId, pagination, url } = require('../middleware/validate');
+const { validate, z, objectId, pagination, url, assetUrl } = require('../middleware/validate');
 const courses = require('../services/course.service');
 const { startCheckout } = require('../services/payments/order.service');
 const { setLessonCompletion } = require('../services/enrollment.service');
@@ -143,7 +143,7 @@ const courseBody = z.object({
     .string()
     .length(3)
     .transform((v) => v.toUpperCase()),
-  thumbnailUrl: url,
+  thumbnailUrl: assetUrl,
   promoVideoUrl: url,
   requirements: z.array(z.string().trim().min(1).max(200)).max(20),
   outcomes: z.array(z.string().trim().min(1).max(200)).max(20),

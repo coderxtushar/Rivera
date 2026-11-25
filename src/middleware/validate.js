@@ -28,7 +28,9 @@ const pagination = {
   limit: z.coerce.number().int().min(1).max(50).default(12),
 };
 const url = z.union([z.url({ protocol: /^https?$/ }).max(2000), z.literal('')]);
+/** Images may also be files served by the website itself, e.g. "/covers/react.jpg". */
+const assetUrl = z.union([url, z.string().regex(/^\/(?!\/)[\w\-./]+$/, 'Use a full https:// link or a /path on this site').max(300)]);
 const password = z.string().min(8, 'Password must be at least 8 characters').max(128);
 const email = z.email().max(254).transform((v) => v.toLowerCase().trim());
 
-module.exports = { validate, z, objectId, pagination, url, password, email };
+module.exports = { validate, z, objectId, pagination, url, assetUrl, password, email };

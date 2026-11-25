@@ -6,7 +6,7 @@ const ApiError = require('../lib/ApiError');
 const { paginate } = require('../lib/util');
 const { User, Course, Lesson, Coupon, Enrollment, Order, Certificate, RefreshToken, Review } = require('../models');
 const { authenticate } = require('../middleware/auth');
-const { validate, z, objectId, pagination, url } = require('../middleware/validate');
+const { validate, z, objectId, pagination, url, assetUrl } = require('../middleware/validate');
 const tokens = require('../services/token.service');
 const { recalcRatingStats } = require('../services/course.service');
 const { revokeEnrollment } = require('../services/enrollment.service');
@@ -48,7 +48,7 @@ router.patch(
         headline: z.string().trim().max(120),
         bio: z.string().trim().max(2000),
         website: url,
-        avatarUrl: url,
+        avatarUrl: assetUrl,
       })
       .partial(),
   }),
