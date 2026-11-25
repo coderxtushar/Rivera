@@ -1,6 +1,6 @@
-# Rivera API
+# Rivera
 
-Backend for **Rivera**, a course marketplace: instructors publish courses, students buy them and learn, and the platform takes a configurable fee. It's built with Express 5, MongoDB (Mongoose 9) and Zod, and it runs on free tiers (Render + MongoDB Atlas M0).
+**Rivera** is a course marketplace: instructors publish courses, students buy them and learn, and the platform takes a configurable fee. The API is built with Express 5, MongoDB (Mongoose 9) and Zod; the web app in [web/](web/) uses Next.js 16, Tailwind 4 and Motion. Both run on free tiers (Render + MongoDB Atlas M0 for the API, Vercel for the site).
 
 ## Features
 
@@ -26,6 +26,9 @@ cp .env.example .env              # set MONGODB_URI at minimum
 docker compose up -d mongo        # optional: local MongoDB on :27017
 npm run seed -- --demo            # categories + demo instructor/student/courses
 npm run dev                       # http://localhost:4000 (auto-reloads)
+
+cd web && npm install && cp .env.example .env.local
+npm run dev                       # the site on http://localhost:3000
 ```
 
 Demo accounts (from `--demo`): `instructor@demo.rivera.dev` / `student@demo.rivera.dev`, password `password123`.
@@ -56,6 +59,7 @@ src/
 scripts/seed.js          categories, admin, demo data
 tests/                   node:test + supertest integration tests
 docs/API.md              endpoint reference for frontend work
+web/                     Next.js frontend (see web/README.md and web/DESIGN.md)
 ```
 
 ## Configuration
