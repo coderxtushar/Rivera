@@ -33,6 +33,8 @@ function createApp() {
         return id;
       },
       autoLogging: { ignore: (req) => req.url === '/health' },
+      // Log the client IP Express resolved, so TRUST_PROXY can be checked behind Vercel + Render.
+      customProps: (req) => ({ ip: req.ip }),
       customLogLevel: (_req, res, err) => (err || res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info'),
     }),
   );

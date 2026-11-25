@@ -85,7 +85,9 @@ const schema = z.object({
   CLOUDINARY_API_SECRET: z.string().optional(),
 });
 
-const parsed = schema.safeParse(process.env);
+// Hosting dashboards often save optional fields as empty strings; treat those as unset.
+const raw = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== ''));
+const parsed = schema.safeParse(raw);
 if (!parsed.success) {
   const lines = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);
   // eslint-disable-next-line no-console
