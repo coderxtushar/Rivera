@@ -207,6 +207,12 @@ async function handleWebhook(providerName, rawBody, headers) {
     logger.warn({ provider: providerName, providerOrderId: parsed.providerOrderId }, 'Webhook for unknown order');
     return { handled: false };
   }
+  if (parsed.event === 'authorized') {
+    // Only for orders still waiting on payment; a capture failure returns 5xx so the provider retries.
+    if (!['created', 'failed'].includes(order.status) || !parsed.providerPaymentId) return { handled: true };
+    await providerByName(providerName).capture(order, parsed.providerPaymentId);
+    await fulfillOrder(order._id, parsed.providerPaymentId);
+  }
   if (parsed.event === 'paid') await fulfillOrder(order._id, parsed.providerPaymentId);
   if (parsed.event === 'failed') {
     await Order.updateOne({ _id: order._id, status: 'created' }, { status: 'failed', failureReason: parsed.reason });

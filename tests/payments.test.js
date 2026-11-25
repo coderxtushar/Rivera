@@ -110,6 +110,35 @@ describe('payment providers', () => {
     assert.equal(order.body.data.order.status, 'paid');
   });
 
+  it('captures and fulfils an authorized-only payment from the webhook (buyer closed the tab)', async () => {
+    const s = await createUser();
+    const res = await api().post('/api/v1/payments/checkout').set(s.auth).send({ courseId: paid.course._id });
+    const rzOrderId = res.body.data.payment.razorpayOrderId;
+    const body = JSON.stringify({
+      event: 'payment.authorized',
+      payload: { payment: { entity: { id: 'pay_auth', order_id: rzOrderId, status: 'authorized' } } },
+    });
+    const send = () =>
+      api()
+        .post('/api/v1/payments/webhooks/razorpay')
+        .set('Content-Type', 'application/json')
+        .set('X-Razorpay-Signature', hmac('rzp_webhook_secret', body))
+        .send(body);
+
+    const first = await send();
+    assert.equal(first.status, 200);
+    const captures = () => calls.filter((c) => c.url.endsWith('/payments/pay_auth/capture')).length;
+    assert.equal(captures(), 1, 'the authorized payment was captured');
+    const order = await api().get(`/api/v1/payments/orders/${res.body.data.order._id}`).set(s.auth);
+    assert.equal(order.body.data.order.status, 'paid');
+    const detail = await api().get(`/api/v1/courses/${paid.course._id}`).set(s.auth);
+    assert.equal(detail.body.data.viewer.isEnrolled, true);
+
+    // Razorpay retries and also sends payment.captured: nothing is captured or granted twice.
+    assert.equal((await send()).status, 200);
+    assert.equal(captures(), 1);
+  });
+
   it('fulfils a Stripe checkout session from a signed webhook', async () => {
     const { Order } = require('../src/models');
     const s = await createUser();

@@ -123,6 +123,10 @@ const razorpay = {
     await razorpayEnsureCaptured(paymentId, order);
     return paymentId;
   },
+  /** Capture an authorized payment reported by webhook (no-op if already captured). */
+  async capture(order, paymentId) {
+    await razorpayEnsureCaptured(paymentId, order);
+  },
   parseWebhook(rawBody, headers) {
     if (!env.RAZORPAY_WEBHOOK_SECRET) throw ApiError.unavailable('Razorpay webhook secret not configured');
     const signature = headers['x-razorpay-signature'];
@@ -131,6 +135,11 @@ const razorpay = {
     }
     const evt = JSON.parse(rawBody.toString('utf8'));
     const payment = evt.payload?.payment?.entity;
+    // Sent when the buyer paid but closed the tab before the site could confirm,
+    // on accounts without auto-capture. Capture it, then grant access.
+    if (evt.event === 'payment.authorized') {
+      return { event: 'authorized', providerOrderId: payment?.order_id, providerPaymentId: payment?.id };
+    }
     if (evt.event === 'payment.captured' || evt.event === 'order.paid') {
       return {
         event: 'paid',
