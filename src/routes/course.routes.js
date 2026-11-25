@@ -133,7 +133,12 @@ const courseBody = z.object({
   tags: z.array(z.string().trim().toLowerCase().min(1).max(30)).max(10),
   level: z.enum(Course.LEVELS),
   language: z.string().trim().min(2).max(40),
-  price: z.number().int().min(0).max(100_000_000),
+  price: z
+    .number()
+    .int()
+    .min(0)
+    .max(100_000_000)
+    .refine((p) => p === 0 || p >= 100, 'Paid courses must cost at least 1.00 (100 in minor units)'),
   currency: z
     .string()
     .length(3)

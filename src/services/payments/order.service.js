@@ -38,10 +38,14 @@ async function resolveCoupon(code, course, userId) {
   return { coupon, discount };
 }
 
+/** Payment gateways reject tiny charges (Razorpay: ₹1). Discounts stop there unless they make it free. */
+const MIN_CHARGE = 100;
+
 async function quote(course, couponCode, userId) {
-  const { coupon, discount } = await resolveCoupon(couponCode, course, userId);
-  const amount = Math.max(0, course.price - discount);
-  return { originalAmount: course.price, discount, amount, currency: course.currency, coupon };
+  const { coupon, discount: raw } = await resolveCoupon(couponCode, course, userId);
+  let amount = Math.max(0, course.price - raw);
+  if (amount > 0 && amount < MIN_CHARGE) amount = Math.min(MIN_CHARGE, course.price);
+  return { originalAmount: course.price, discount: course.price - amount, amount, currency: course.currency, coupon };
 }
 
 function splitRevenue(amount) {

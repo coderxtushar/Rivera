@@ -160,6 +160,17 @@ describe('regressions', () => {
     assert.ok(refreshed.body.data.refreshToken);
   });
 
+  it('never discounts a paid course below the gateway minimum of 100', async () => {
+    const { course } = await createPublishedCourse(instructor, { price: 10000 });
+    await api().post('/api/v1/coupons').set(instructor.auth).send({ code: 'ALMOSTFREE', type: 'fixed', value: 9950, course: course._id });
+    const s = await createUser();
+    const q = await api().post('/api/v1/payments/quote').set(s.auth).send({ courseId: course._id, couponCode: 'ALMOSTFREE' });
+    assert.equal(q.body.data.amount, 100);
+    assert.equal(q.body.data.discount, 9900);
+    const tooCheap = await api().post('/api/v1/courses').set(instructor.auth).send({ title: 'Fifty paise course', price: 50 });
+    assert.equal(tooCheap.status, 400);
+  });
+
   it('does not expose student emails to instructors', async () => {
     const { course } = await createPublishedCourse(instructor, { price: 0 });
     const s = await createUser();
