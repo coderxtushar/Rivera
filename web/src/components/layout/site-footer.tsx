@@ -19,10 +19,12 @@ const COLUMNS = [
     ],
   },
   {
-    title: "Account",
+    title: "Help",
     links: [
-      { href: "/settings", label: "Settings" },
-      { href: "/forgot-password", label: "Reset password" },
+      { href: "/contact", label: "Contact us" },
+      { href: "/refunds", label: "Refunds and cancellations" },
+      { href: "/terms", label: "Terms of service" },
+      { href: "/privacy", label: "Privacy policy" },
     ],
   },
 ];
