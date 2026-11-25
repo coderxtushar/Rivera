@@ -165,7 +165,7 @@ describe('auth', () => {
     const evil = await api().post('/api/v1/auth/signout').set('Cookie', cookiesOf(signin)).set('Origin', 'https://evil.example');
     assert.equal(evil.status, 403);
     assert.equal(evil.body.error.code, 'BAD_ORIGIN');
-    const good = await api().post('/api/v1/auth/signout').set('Cookie', cookiesOf(signin)).set('Origin', 'http://localhost:5173');
+    const good = await api().post('/api/v1/auth/signout').set('Cookie', cookiesOf(signin)).set('Origin', 'http://localhost:3000');
     assert.equal(good.status, 204);
   });
 

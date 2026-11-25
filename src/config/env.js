@@ -46,7 +46,7 @@ const schema = z.object({
   ACCESS_TOKEN_TTL: z.string().default('15m'),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
 
-  CLIENT_URL: z.url().default('http://localhost:5173'),
+  CLIENT_URL: z.url().default('http://localhost:3000'),
   CORS_ORIGINS: csv,
   COOKIE_SECURE: bool(isProd),
   COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),

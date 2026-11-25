@@ -6,7 +6,7 @@
  */
 process.env.NODE_ENV = 'test';
 process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://placeholder/test';
-process.env.CLIENT_URL = 'http://localhost:5173';
+process.env.CLIENT_URL = 'http://localhost:3000';
 process.env.PLATFORM_FEE_PERCENT = '20';
 
 const { MongoMemoryServer } = require('mongodb-memory-server');
