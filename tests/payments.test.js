@@ -32,6 +32,13 @@ describe('payment providers', () => {
       if (String(url).endsWith('/v1/orders')) {
         return new Response(JSON.stringify({ id: `order_rz_${calls.length}` }), { status: 200 });
       }
+      // Payment lookup: report "authorized" so the API has to capture it.
+      if (/\/v1\/payments\/[^/]+$/.test(String(url)) && init?.method === 'GET') {
+        return new Response(JSON.stringify({ id: 'pay_1', status: 'authorized' }), { status: 200 });
+      }
+      if (String(url).endsWith('/capture')) {
+        return new Response(JSON.stringify({ id: 'pay_1', status: 'captured' }), { status: 200 });
+      }
       return new Response(JSON.stringify({ id: 'rfnd_1' }), { status: 200 });
     };
     instructor = await createUser({ role: 'instructor' });
@@ -74,6 +81,9 @@ describe('payment providers', () => {
     assert.equal(ok.status, 200);
     assert.equal(ok.body.data.order.status, 'paid');
     assert.equal(ok.body.data.order.providerPaymentId, 'pay_1');
+    const capture = calls.find((c) => c.url.endsWith('/payments/pay_1/capture'));
+    assert.ok(capture, 'authorized payment was captured');
+    assert.deepEqual(JSON.parse(capture.init.body), { amount: 50000, currency: 'INR' });
   });
 
   it('fulfils a Razorpay order from a signed webhook (and rejects unsigned ones)', async () => {

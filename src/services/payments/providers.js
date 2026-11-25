@@ -59,6 +59,30 @@ const mock = {
 const razorpayAuth = () =>
   `Basic ${Buffer.from(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`).toString('base64')}`;
 
+/**
+ * Accounts with manual capture leave payments "authorized", and Razorpay
+ * refunds those after a few days. Capture them here so access and money match,
+ * whatever the dashboard's capture setting is.
+ */
+async function razorpayEnsureCaptured(paymentId, order) {
+  const url = `https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`;
+  const payment = await callApi(url, { method: 'GET', headers: { Authorization: razorpayAuth() } });
+  if (payment.status === 'captured') return;
+  if (payment.status !== 'authorized') {
+    throw ApiError.unprocessable(`The payment wasn't completed (status: ${payment.status}). You haven't been charged.`, 'PAYMENT_NOT_COMPLETED');
+  }
+  try {
+    await callApi(`${url}/capture`, {
+      headers: { Authorization: razorpayAuth(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: order.amount, currency: order.currency }),
+    });
+  } catch (err) {
+    // A webhook or auto-capture may have captured it a moment earlier.
+    const again = await callApi(url, { method: 'GET', headers: { Authorization: razorpayAuth() } });
+    if (again.status !== 'captured') throw err;
+  }
+}
+
 const razorpay = {
   name: 'razorpay',
   async createCheckout({ order, course, user }) {
@@ -96,6 +120,7 @@ const razorpay = {
     if (rzOrderId !== order.providerOrderId) throw ApiError.badRequest('Payment does not belong to this order');
     const expected = hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${rzOrderId}|${paymentId}`);
     if (!safeEqual(expected, signature)) throw ApiError.badRequest('Invalid payment signature', undefined, 'BAD_SIGNATURE');
+    await razorpayEnsureCaptured(paymentId, order);
     return paymentId;
   },
   parseWebhook(rawBody, headers) {
