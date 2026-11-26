@@ -11,6 +11,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/field";
 import { EmptyState, Pagination } from "@/components/ui/misc";
 import { cn, plural } from "@/lib/format";
+import { useAuth } from "@/lib/auth";
 import { useCategories, useCourses } from "@/lib/public-queries";
 import type { Level } from "@/lib/types";
 
@@ -105,6 +106,7 @@ function Filters({ get, set }: ReturnType<typeof useFilters>) {
 }
 
 export function Catalog() {
+  const { user, loading: authLoading } = useAuth();
   const filters = useFilters();
   const { get, set } = filters;
   const [q, setQ] = useState(get("q"));
@@ -129,8 +131,11 @@ export function Catalog() {
     sort: get("sort") || undefined,
     page: get("page") || undefined,
     limit: 12,
+    // Signed-in learners don't see courses they already own.
+    excludeEnrolled: user ? "true" : undefined,
   };
-  const { data, isPending, isFetching, isError } = useCourses(query);
+  // Wait for the sign-in check so the list isn't fetched twice (anonymous, then personal).
+  const { data, isPending, isFetching, isError } = useCourses(query, { enabled: !authLoading, viewerId: user?._id });
 
   const activeCategory = categories?.find((c) => c.slug === get("category"));
   const chips = [
@@ -234,7 +239,7 @@ export function Catalog() {
           ) : data.data.length === 0 ? (
             <EmptyState
               title="No courses match"
-              body="Try a broader search, or remove a filter or two."
+              body={user ? "Try a broader search, or remove a filter or two. Courses you already own are in My learning." : "Try a broader search, or remove a filter or two."}
               action={
                 <Button
                   variant="secondary"

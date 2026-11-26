@@ -143,6 +143,24 @@ describe('courses & curriculum', () => {
     assert.equal((await api().get('/api/v1/courses').query({ sort: 'bogus' })).status, 400);
   });
 
+  it('leaves out courses the signed-in viewer already owns when asked', async () => {
+    const { course } = await createPublishedCourse(instructor, { title: 'Owned Course Example', price: 0 });
+    const viewer = await createUser();
+    assert.equal((await api().post(`/api/v1/courses/${course._id}/enroll`).set(viewer.auth)).status, 201);
+
+    const ids = (res) => res.body.data.map((c) => c._id);
+    const q = { q: 'owned', excludeEnrolled: 'true' };
+    const mine = await api().get('/api/v1/courses').query(q).set(viewer.auth);
+    assert.equal(mine.status, 200);
+    assert.ok(!ids(mine).includes(course._id), 'owned course is hidden');
+    assert.equal(mine.body.meta.total, 0, 'totals match the filtered list');
+
+    // Without the flag, for other users, and for anonymous visitors, it still shows.
+    assert.ok(ids(await api().get('/api/v1/courses').query({ q: 'owned' }).set(viewer.auth)).includes(course._id));
+    assert.ok(ids(await api().get('/api/v1/courses').query(q).set(student.auth)).includes(course._id));
+    assert.ok(ids(await api().get('/api/v1/courses').query(q)).includes(course._id));
+  });
+
   it('filters by category slug and reports category course counts', async () => {
     const { course } = await createPublishedCourse(instructor, { title: 'Categorised Course' });
     await api().patch(`/api/v1/courses/${course._id}`).set(instructor.auth).send({ category: category._id });

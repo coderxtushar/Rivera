@@ -24,9 +24,13 @@ export function useCategories() {
 
 export type CourseQuery = Record<string, string | number | undefined>;
 
-export function useCourses(query: CourseQuery, opts: { enabled?: boolean } = {}) {
+/**
+ * Course lists. Pass `viewerId` when the query depends on who's signed in
+ * (e.g. `excludeEnrolled`), so each account gets its own cached results.
+ */
+export function useCourses(query: CourseQuery, opts: { enabled?: boolean; viewerId?: string } = {}) {
   return useQuery({
-    queryKey: ["public", "courses", query],
+    queryKey: ["public", "courses", query, opts.viewerId ?? "anon"],
     queryFn: () => api<Paged<Course>>("/courses", { query }),
     placeholderData: keepPreviousData,
     enabled: opts.enabled ?? true,

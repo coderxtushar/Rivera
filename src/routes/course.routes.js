@@ -38,6 +38,8 @@ const listQuery = z.object({
   featured: z.enum(['true', 'false']).optional(),
   minRating: z.coerce.number().min(0).max(5).optional(),
   sort: z.enum(['relevance', 'newest', 'popular', 'rating', 'price_asc', 'price_desc']).optional(),
+  // Signed-in callers only: leave out courses they're already enrolled in.
+  excludeEnrolled: z.enum(['true', 'false']).optional(),
 });
 
 const SORTS = {
@@ -54,10 +56,15 @@ async function resolveCategoryId(value) {
   return cat?._id || null;
 }
 
-router.get('/', validate({ query: listQuery }), async (req, res) => {
+router.get('/', optionalAuth, validate({ query: listQuery }), async (req, res) => {
   const q = req.valid.query;
   const { skip, limit, meta } = paginate(q);
   const filter = { status: 'published' };
+
+  if (q.excludeEnrolled === 'true' && req.user) {
+    const owned = await Enrollment.distinct('course', { user: req.user._id });
+    if (owned.length) filter._id = { $nin: owned };
+  }
 
   if (q.q) filter.$text = { $search: q.q };
   if (q.category) {
