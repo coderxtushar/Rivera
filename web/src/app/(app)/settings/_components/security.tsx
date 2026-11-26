@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -100,10 +101,13 @@ export function ChangePassword() {
             {(p) => <Input {...p} type="password" autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />}
           </Field>
         </div>
-        <div>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
           <Button type="submit" loading={saving}>
             Change password
           </Button>
+          <Link href="/forgot-password" className="text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink">
+            Forgot your current password?
+          </Link>
         </div>
       </form>
     </SettingsPanel>
